@@ -1,0 +1,20 @@
+services:
+
+  app:
+    image: businessproject:1.0
+    container_name: bussiness-app
+    ports:
+      - "2330:2330"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://business-mysql:3306/businessproject
+    depends_on:
+      - db
+  
+  db:
+    image: mysql:8.0
+    container_name: business-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: businessproject
+    ports:
+      - "3306:3306"
