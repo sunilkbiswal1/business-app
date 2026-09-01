@@ -13,7 +13,7 @@ pipeline {
         NEXUS_URL         = 'http://192.168.1.11:8081'
         DOCKER_REGISTRY   = ''
         IMAGE_NAME        = 'business-project'
-        IMAGE_TAG         = "$(env.BUILD_NUMBER)"
+        IMAGE_TAG         = "${env.BUILD_NUMBER}"
     }
 
     stages {
