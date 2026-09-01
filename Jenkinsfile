@@ -22,7 +22,7 @@ pipeline {
 
             steps {
                 echo '=========== GIT CHECKOUT ============'
-                Checkout scm
+                checkout scm
             }
         }
 
