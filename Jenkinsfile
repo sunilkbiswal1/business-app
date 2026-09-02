@@ -11,7 +11,7 @@ pipeline {
         APP_NAME          = 'businessproject'
         SONAR_PROJECT_KEY = 'businessproject'
         NEXUS_URL         = 'http://192.168.1.11:8081'
-        DOCKER_REGISTRY   = ''
+        DOCKER_REGISTRY   = 'sunilkumar45'
         IMAGE_NAME        = 'business-project'
         IMAGE_TAG         = "${env.BUILD_NUMBER}"
     }
