@@ -46,7 +46,7 @@ pipeline {
                 echo "==================== SONARQUBE  ANALYSIS =================="
                 withSonarQubeEnv('sonarqube') {
                     sh '''
-                        mvn -B sonar:sonar \
+                        mvn org.sonarsource.scanner.maven:sonar-maven-plugin:5.7.0.6970:sonar \
                             -Dsonar.projectKey=${SONAR_PROJECT_KEY}
                     '''
                 }
