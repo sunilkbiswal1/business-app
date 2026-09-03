@@ -182,6 +182,9 @@ EOF
 
                 sh '''
                     trivy image \
+                        --image-src docker \
+                        --timeout 15m \
+                        --no-progress \
                         --severity HIGH,CRITICAL \
                         --exit-code 1 \
                         --ignore-unfixed \
