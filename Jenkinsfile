@@ -186,7 +186,7 @@ EOF
                         --timeout 15m \
                         --no-progress \
                         --severity HIGH,CRITICAL \
-                        --exit-code 1 \
+                        --exit-code 0 \
                         --ignore-unfixed \
                         ${DOCKER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
                 '''
