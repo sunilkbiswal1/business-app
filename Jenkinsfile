@@ -207,8 +207,8 @@ EOF
                     sh '''
                         set +x
 
-                        echo $DOCKER_PASSWORD | \
-                        docker login ${DOCKER_REGISTRY} \
+                        printf '%s' $DOCKER_PASSWORD | \
+                        docker login \
                         -u "$DOCKER_USER" \
                         --password-stdin
 
