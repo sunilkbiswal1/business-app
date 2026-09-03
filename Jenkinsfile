@@ -205,7 +205,7 @@ EOF
                 ]) {
 
                     sh '''
-                        set +X
+                        set +x
 
                         echo $DOCKER_PASSWORD | \
                         docker login ${DOCKER_REGISTRY} \
