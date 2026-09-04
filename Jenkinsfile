@@ -1,46 +1,36 @@
 pipeline {
-
     agent any
-
     options {
         timestamps()
         disableConcurrentBuilds()
     }
-
     environment {
-        APP_NAME          = 'businessproject'
+        APP_NAME = 'businessproject'
         SONAR_PROJECT_KEY = 'businessproject'
-        NEXUS_URL         = 'http://192.168.1.11:8081'
-        DOCKER_REGISTRY   = 'sunilkumar45'
-        IMAGE_NAME        = 'business-project'
-        IMAGE_TAG         = "${env.BUILD_NUMBER}"
+        NEXUS_URL = 'http://192.168.1.11:8081'
+        DOCKER_REGISTRY = 'sunilkumar45'
+        IMAGE_NAME = 'business-project'
+        IMAGE_TAG = "${env.BUILD_NUMBER}"
     }
-
     stages {
-
         stage('Checkout') {
-
             steps {
                 echo '=========== GIT CHECKOUT ============'
                 checkout scm
             }
         }
-
         stage('BUild & Test') {
-
             steps {
                 echo '============= MAVEN BUILD & TEST =============='
                 sh 'mvn clean compile test'
             }
         }
-
         stage('package') {
             steps {
                 echo "============ PACKAGE ============"
                 sh 'mvn package -DskipTests'
             }
         }
-
         stage('Static Code Analysis') {
             steps {
                 echo "==================== SONARQUBE  ANALYSIS =================="
@@ -52,17 +42,14 @@ pipeline {
                 }
             }
         }
-
         stage('quality Gate') {
             steps {
                 echo "=============== SoNARQUBE QUALITYGATE ================"
-
                 timeout(time: 10, unit: 'MINUTES') {
                     waitForQualityGate abortPipeline: true
                 }
             }
         }
-
         stage('Publish Artifact to  Nexus') {
             steps {
                 echo "================== PUBLISH JAR TO NEXUS =============="
@@ -73,7 +60,6 @@ pipeline {
                         passwordVariable: 'NEXUS_PASSWORD'
                     )
                 ]) {
-                    
                     sh '''
                       set +x
 
@@ -165,21 +151,37 @@ EOF
                 }
             }
         }
-
+        stage('Docker Login') {
+            steps {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'docker-credentials',
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASSWORD'
+                    )
+                ]) {
+                    sh '''
+                            set +x
+            
+                            printf '%s' "$DOCKER_PASSWORD" |
+                                docker login \
+                                    --username "$DOCKER_USER" \
+                                    --password-stdin
+                        '''
+                }
+            }
+        }
         stage('Docker Build') {
             steps {
                 echo "============== DOCKER BUILD========"
-
                 sh '''
                     docker build -t ${DOCKER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} . 
                 '''
             }
         }
-
         stage('Trivy Scan') {
             steps {
                 echo "================ Trivy Scan ===================="
-
                 sh '''
                     trivy image \
                         --image-src docker \
@@ -192,34 +194,16 @@ EOF
                 '''
             }
         }
-
         stage('Docker Push') {
             steps {
-                echo "================= PUSHING IMAGE TO DOCKERHUB ==============="
-                withCredentials([
-                    usernamePassword(
-                        credentialsId: 'docker-credentials',
-                        usernameVariable: 'DOCKER_USER',
-                        passwordVariable: 'DOCKER_PASSWORD'
-                    )
-                ]) {
-
-                    sh '''
-                        set +x
-
-                        printf '%s' $DOCKER_PASSWORD | \
-                        docker login \
-                        -u "$DOCKER_USER" \
-                        --password-stdin
-
-                        docker push ${DOCKER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
-                    '''
-                }
+                echo '================ PUSHING IMAGE TO DOCKER HUB ================'
+                sh '''
+                    docker push "${DOCKER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
+                '''
             }
         }
     }
-
-     post {
+    post {
         always {
             archiveArtifacts artifacts: 'target/*.jar, trivy-*-report.txt', allowEmptyArchive: true
             junit testResults: '**/target/surefire-reports/*.xml', allowEmptyResults: true
