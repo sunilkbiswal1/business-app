@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: business-app
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: business-app
+
+  template:
+    metadata:
+      labels:
+        app: business-app
+
+    spec:
+      containers:
+        - name: business-app
+
+          image: sunilkumar45/business-project:16
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - containerPort: 2330
+
+          env:
+            - name: SERVER_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: business-app-config
+                  key: SERVER_PORT
+
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: business-app-config
+                  key: SPRING_DATASOURCE_URL
+
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: business-db-secret
+                  key: SPRING_DATASOURCE_USERNAME
+
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: business-db-secret
+                  key: SPRING_DATASOURCE_PASSWORD
