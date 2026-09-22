@@ -1,0 +1,24 @@
+{{- if .Values.db.enabled }}
+
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: {{ include "business-app.dbFullname" . }}
+
+  labels:
+    {{- include "business-app.dbLabels" . | nindent 4 }}
+
+spec:
+  type: {{ .Values.db.service.type }}
+
+  ports:
+    - name: mysql
+      port: {{ .Values.db.service.port }}
+      targetPort: mysql
+      protocol: TCP
+
+  selector:
+    {{- include "business-app.dbSelectorLabels" . | nindent 4 }}
+
+{{- end }}

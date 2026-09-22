@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+
+metadata:
+  name: {{ include "business-app.configName" . }}
+  labels:
+    {{- include "business-app.commonLabels" . | nindent 4 }}
+
+data:
+  SERVER_PORT: {{ .Values.config.serverPort | quote }}
+
+  MYSQL_DATABASE: {{ .Values.config.databaseName | quote }}
+
+  SPRING_DATASOURCE_URL: {{
+    default
+      (printf "jdbc:mysql://%s:%v/%s"
+        (include "business-app.dbFullname" .)
+        .Values.db.service.port
+        .Values.config.databaseName)
+      .Values.config.datasourceUrl
+    | quote
+  }}

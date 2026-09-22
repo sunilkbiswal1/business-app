@@ -1,0 +1,83 @@
+nameOverride: ""
+fullnameOverride: ""
+
+app:
+  replicaCount: 2
+
+  image:
+    repository: sunilkumar45/business-project
+    tag: "16"
+    pullPolicy: IfNotPresent
+
+  containerPort: 2330
+
+  service:
+    type: NodePort
+    port: 2330
+
+  podAnnotations: {}
+  podLabels: {}
+
+  resources: {}
+
+
+db:
+  enabled: true
+
+  replicaCount: 1
+
+  image:
+    repository: mysql
+    tag: "8.0"
+    pullPolicy: IfNotPresent
+
+  containerPort: 3306
+
+  service:
+    type: ClusterIP
+    port: 3306
+
+  persistence:
+    enabled: true
+    size: 5Gi
+    storageClass: ""
+    accessModes:
+      - ReadWriteOnce
+
+
+config:
+  serverPort: "2330"
+  databaseName: "businessproject"
+
+  datasourceUrl: "jdbc:mysql://business-business-app-db:3306/businessproject"
+
+
+secret:
+  mysqlRootPassword: "root"
+
+  datasourceUsername: "root"
+
+  datasourcePassword: "root"
+
+
+ingress:
+  enabled: true
+
+  className: nginx
+
+  annotations: {}
+
+  hosts:
+    - host: business-helm.local
+      paths:
+        - path: /
+          pathType: Prefix
+
+  tls: []
+
+
+serviceAccount:
+  create: false
+  automount: false
+  annotations: {}
+  name: ""

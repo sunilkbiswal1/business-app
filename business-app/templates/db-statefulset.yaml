@@ -1,0 +1,87 @@
+{{- if .Values.db.enabled }}
+
+apiVersion: apps/v1
+kind: StatefulSet
+
+metadata:
+  name: {{ include "business-app.dbFullname" . }}
+
+  labels:
+    {{- include "business-app.dbLabels" . | nindent 4 }}
+
+spec:
+  serviceName: {{ include "business-app.dbHeadlessFullname" . }}
+
+  replicas: {{ .Values.db.replicaCount }}
+
+  selector:
+    matchLabels:
+      {{- include "business-app.dbSelectorLabels" . | nindent 6 }}
+
+  template:
+    metadata:
+      labels:
+        {{- include "business-app.dbSelectorLabels" . | nindent 8 }}
+
+    spec:
+      containers:
+
+        - name: mysql
+
+          image: "{{ .Values.db.image.repository }}:{{ .Values.db.image.tag }}"
+
+          imagePullPolicy: {{ .Values.db.image.pullPolicy }}
+
+          ports:
+            - name: mysql
+              containerPort: {{ .Values.db.containerPort }}
+              protocol: TCP
+
+          env:
+
+            - name: MYSQL_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "business-app.configName" . }}
+                  key: MYSQL_DATABASE
+
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "business-app.secretName" . }}
+                  key: MYSQL_ROOT_PASSWORD
+
+          volumeMounts:
+            - name: mysql-storage
+              mountPath: /var/lib/mysql
+
+      {{- if not .Values.db.persistence.enabled }}
+
+      volumes:
+        - name: mysql-storage
+          emptyDir: {}
+
+      {{- end }}
+
+  {{- if .Values.db.persistence.enabled }}
+
+  volumeClaimTemplates:
+
+    - metadata:
+        name: mysql-storage
+
+      spec:
+        accessModes:
+          {{- toYaml .Values.db.persistence.accessModes | nindent 10 }}
+
+        {{- if .Values.db.persistence.storageClass }}
+        storageClassName: {{ .Values.db.persistence.storageClass | quote }}
+        {{- end }}
+
+        resources:
+          requests:
+            storage: {{ .Values.db.persistence.size }}
+
+  {{- end }}
+
+{{- end }}

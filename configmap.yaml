@@ -1,9 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: business-app-config
-
-data:
-  SPRING_DATASOURCE_URL: "jdbc:mysql://business-mysql:3306/businessproject"
-  SERVER_PORT: "2330"
-  MYSQL_DATABASE: "businessproject"

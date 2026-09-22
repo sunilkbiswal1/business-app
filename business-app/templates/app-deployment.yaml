@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: {{ include "business-app.fullname" . }}
+
+  labels:
+    {{- include "business-app.appLabels" . | nindent 4 }}
+
+spec:
+  replicas: {{ .Values.app.replicaCount }}
+
+  selector:
+    matchLabels:
+      {{- include "business-app.appSelectorLabels" . | nindent 6 }}
+
+  template:
+    metadata:
+
+      {{- with .Values.app.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      labels:
+        {{- include "business-app.appSelectorLabels" . | nindent 8 }}
+
+        {{- with .Values.app.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+
+    spec:
+      serviceAccountName: {{ include "business-app.serviceAccountName" . }}
+
+      containers:
+        - name: {{ .Chart.Name }}
+
+          image: "{{ .Values.app.image.repository }}:{{ .Values.app.image.tag }}"
+
+          imagePullPolicy: {{ .Values.app.image.pullPolicy }}
+
+          ports:
+            - name: http
+              containerPort: {{ .Values.app.containerPort }}
+              protocol: TCP
+
+          env:
+
+            - name: SERVER_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "business-app.configName" . }}
+                  key: SERVER_PORT
+
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "business-app.configName" . }}
+                  key: SPRING_DATASOURCE_URL
+
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "business-app.secretName" . }}
+                  key: SPRING_DATASOURCE_USERNAME
+
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "business-app.secretName" . }}
+                  key: SPRING_DATASOURCE_PASSWORD
+
+          {{- with .Values.app.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
