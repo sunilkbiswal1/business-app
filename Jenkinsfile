@@ -202,6 +202,28 @@ EOF
                 '''
             }
         }
+        stage('Install yq & Update helm image tag') {
+            steps {
+                echo "==================== UPDATING THE IMAGE TAG IN VALUES.YAML ============================"
+                sh '''
+                    # Download yq temporarily into Jenkins workspace
+                    curl -L \
+                      https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 \
+                      -o ./yq
+        
+                    chmod +x ./yq
+                    YQ="./yq"
+                    # Check version
+                    ./yq --version
+                    echo "Old tag: "
+                    $YQ -i \
+                        '.app.image.tag = "${IMAGE_TAG}"' \
+                        business-app/values.yaml
+                        echo "Updated image tag:"
+                        $YQ '.app.image.tag' business-app/values.yaml
+                '''
+            }
+        }
     }
     post {
         always {
